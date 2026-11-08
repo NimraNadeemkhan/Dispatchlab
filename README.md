@@ -1,4 +1,4 @@
-# DispatchLab
+# Dispatchlab
 
 A warehouse robot fleet simulator in Python. It tests one question: **does battery- and distance-aware dispatch outperform first-come, first-served dispatch, and when?**
 
