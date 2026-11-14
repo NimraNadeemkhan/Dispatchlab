@@ -1,6 +1,6 @@
-# Dispatchlab
+# DispatchLab
 
-A warehouse robot fleet simulator in Python. It tests one question: **does battery- and distance-aware dispatch outperform first-come, first-served dispatch, and when?**
+A warehouse robot fleet simulator in Python. It tests one question: **Does battery- and distance-aware dispatch outperform first-come, first-served dispatch, and when?**
 
 > **Status:** work in progress (week 1 build). Results will be added once the comparison has been run.
 
@@ -23,10 +23,11 @@ Warehouses and delivery zones run fleets of robots. The hard part is deciding wh
 
 ## What's in the simulation
 
-- A grid warehouse with shelves, a pickup zone, a drop-off bay, and a charging dock
-- Four robots that carry orders, drain battery as they move, and return to charge
-- Obstacles that block aisles, with robots recalculating a route around them
-- An order queue, including sudden surges of orders
+- A grid warehouse with a wall, a charging dock, and goal cells
+- Four robots that drain battery as they move
+- BFS pathfinding, so robots route around blocked aisles
+- A charging dock: a robot with low battery stops its delivery, recharges, then resumes
+- Still to come: an order queue, order surges, and the two dispatchers
 
 ## Progress
 
@@ -34,8 +35,8 @@ Warehouses and delivery zones run fleets of robots. The hard part is deciding wh
 |---|---|---|
 | 1 | Draw a grid and move one robot | Done |
 | 2 | Block an aisle and reroute around it | Done |
-| 3 | Four robots, battery drain, charging dock | Next |
-| 4 | Order queue, naive and smart dispatch, metrics | Planned |
+| 3 | Four robots, battery drain, charging dock | Done |
+| 4 | Order queue, naive and smart dispatch, metrics | Next |
 | 5 | Run the comparison and write up results | Planned |
 
 ## Run it
@@ -46,10 +47,10 @@ Requires Python 3.9 or newer.
 git clone https://github.com/NimraNadeemkhan/dispatchlab.git
 cd dispatchlab
 pip install -r requirements.txt
-python milestones/milestone1/step2.py
+python milestones/milestone3/step7_dock.py
 ```
 
-You should see a robot move across a 10x10 grid from the green start square to the red goal.
+You should see four robots cross a wall through a gap at the top. The low-battery robots stop at the green dock in the corner to recharge before finishing their deliveries. The terminal prints each event and ends with the total number of steps.
 
 ## Project structure
 
@@ -58,8 +59,10 @@ dispatchlab/
 |-- README.md
 |-- requirements.txt
 |-- milestones/        # step-by-step learning history
-|   `-- milestone1/    # grid drawing and one moving robot
-|-- src/               # the simulation (added as it is built)
+|   |-- milestone1/    # grid drawing and one moving robot
+|   |-- milestone2/    # wall obstacle and BFS pathfinding
+|   `-- milestone3/    # Robot class, four-robot fleet, charging dock
+|-- src/               # the final simulation (added as it is built)
 |-- results/           # comparison outputs (added after the runs)
 `-- docs/              # screenshots and notes
 ```
@@ -68,7 +71,8 @@ dispatchlab/
 
 - It is a **simplified 2D grid simulation**, not a model of a real warehouse or real robot hardware.
 - The battery model uses **simple assumed drain rates**, not measured values.
-- Robot-to-robot conflicts are handled with a basic wait-or-reroute rule. Full deadlock avoidance is out of scope for the first version.
+- Robots do not avoid each other yet: they can share a cell, and the simulation only counts overlaps.
+- The charging dock has no capacity limit, so several robots can charge at the same cell at once.
 - Fleet-management systems such as Open-RMF solve the same kind of problem at a much larger scale. This project is a learning-scale version of the idea.
 
 ## Possible next steps
