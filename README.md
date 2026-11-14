@@ -1,8 +1,8 @@
 # DispatchLab
 
-A warehouse robot fleet simulator in Python. It tests one question: **Does battery- and distance-aware dispatch outperform first-come, first-served dispatch, and when?**
+A warehouse robot fleet simulator in Python. It tests one question: **does battery- and distance-aware dispatch outperform first-come, first-served dispatch, and when?**
 
-> **Status:** work in progress (week 1 build). Results will be added once the comparison has been run.
+> **Status:** first version complete. Results below.
 
 ---
 
@@ -12,22 +12,24 @@ Warehouses and delivery zones run fleets of robots. The hard part is deciding wh
 
 | Strategy | How it assigns an order |
 |---|---|
-| **Naive** | Gives the order to the next free robot (first come, first served) |
-| **Smart** | Scores each robot on distance to the pickup and remaining battery, then picks the best |
+| **Naive** | Gives the order to the first idle robot in the list, ignoring distance |
+| **Smart** | Scores each idle robot on distance to the pickup plus a small penalty for low battery, then picks the lowest score |
 
-## How the comparison will be kept fair
+Both strategies follow the same physical rules: a robot only accepts an order if its battery can cover the pickup, the delivery, and the trip to the dock afterwards, and idle robots below 50% battery go to charge.
+
+## How the comparison is kept fair
 
 - Both strategies run on the **same seeded sequence of orders**.
-- Each scenario is **repeated over many runs** and averaged, not judged from a single run.
-- Results will report **orders per hour, average delivery time, and energy wasted**, including cases where the gap is small or the smart strategy loses.
+- Each scenario is **repeated over 30 seeds** and averaged, not judged from a single run.
+- Results report **average delivery time, worst delivery time, and empty energy**, and also how often the smart strategy actually wins, since it does not win every time.
 
 ## What's in the simulation
 
-- A grid warehouse with a wall, a charging dock, and goal cells
+- A 10x10 grid warehouse with a wall that has a gap at the top, eight pickup and drop-off stations, and a charging dock
 - Four robots that drain battery as they move
-- BFS pathfinding, so robots route around blocked aisles
-- A charging dock: a robot with low battery stops its delivery, recharges, then resumes
-- Still to come: an order queue, order surges, and the two dispatchers
+- BFS pathfinding, so robots route around the wall
+- A charging dock: robots with low battery stop, recharge, then resume
+- An order queue with random arrivals, plus an **order surge** scenario where 15 of 30 orders arrive at once
 
 ## Progress
 
@@ -37,35 +39,7 @@ Warehouses and delivery zones run fleets of robots. The hard part is deciding wh
 | 2 | Block an aisle and reroute around it | Done |
 | 3 | Four robots, battery drain, charging dock | Done |
 | 4 | Order queue, naive and smart dispatch, metrics | Done |
-| 5 | Run the comparison and write up results | Next |
-
-## Run it
-
-Requires Python 3.9 or newer.
-
-```bash
-git clone https://github.com/NimraNadeemkhan/dispatchlab.git
-cd dispatchlab
-pip install -r requirements.txt
-python milestones/milestone3/step7_dock.py
-```
-
-You should see four robots cross a wall through a gap at the top. The low-battery robots stop at the green dock in the corner to recharge before finishing their deliveries. The terminal prints each event and ends with the total number of steps.
-
-## Project structure
-
-```text
-dispatchlab/
-|-- README.md
-|-- requirements.txt
-|-- milestones/        # step-by-step learning history
-|   |-- milestone1/    # grid drawing and one moving robot
-|   |-- milestone2/    # wall obstacle and BFS pathfinding
-|   `-- milestone3/    # Robot class, four-robot fleet, charging dock
-|-- src/               # the final simulation (added as it is built)
-|-- results/           # comparison outputs (added after the runs)
-`-- docs/              # screenshots and notes
-```
+| 5 | Run the comparison and write up results | Done |
 
 ## Results
 
@@ -80,17 +54,75 @@ I ran both dispatchers on the same seeded orders, 30 seeds per scenario. In the 
 | Surge | Naive | 67.7 | 123.7 | 361.3 |
 | Surge | Smart | 56.9 | 114.3 | 306.7 |
 
-The smart dispatcher had the lower average delivery time in 27 of 30 normal seeds and 28 of 30 surge seeds. Times are in simulation steps. Empty energy is battery spent driving without an order. The smart score weights (distance plus a small battery penalty) are assumptions, not tuned values, and this is a simplified simulation, so the results show a pattern in this setup and not a real-world claim.## Design decisions and limitations
+**What the numbers show**
+
+- The smart dispatcher had the lower average delivery time in **27 of 30** normal seeds and **28 of 30** surge seeds.
+- On average it cut delivery time by about 18% (normal) and 16% (surge), and reduced empty driving energy by about 17% and 15%.
+- It did not win every seed, and during a surge the advantage on worst-case delivery time is smaller (about 8%).
+
+Times are in simulation steps, not real seconds. Empty energy is battery spent driving without an order. The raw per-run data is in [`results/results.csv`](results/results.csv).
+
+## Run it
+
+Requires Python 3.9 or newer.
+
+```bash
+git clone https://github.com/NimraNadeemkhan/dispatchlab.git
+cd dispatchlab
+pip install -r requirements.txt
+python src/run_experiment.py
+```
+
+Run it from the repository folder. It prints a summary table and writes `results/results.csv` and `results/comparison.png`.
+
+To watch the robots move, run the animated demos:
+
+```bash
+python milestones/milestone2/step4_pathfinding.py
+python milestones/milestone3/step7_dock.py
+```
+
+## Project structure
+
+```text
+dispatchlab/
+|-- README.md
+|-- LICENSE
+|-- requirements.txt
+|-- milestones/            # step-by-step build history
+|   |-- milestone1/        # grid drawing and one moving robot
+|   |-- milestone2/        # wall obstacle and BFS pathfinding
+|   |-- milestone3/        # Robot class, four-robot fleet, charging dock
+|   `-- milestone4/        # order queue, naive vs smart dispatch, metrics
+|-- src/
+|   `-- run_experiment.py  # the full experiment: 30 seeds, two scenarios
+`-- results/
+    |-- results.csv        # one row per run
+    `-- comparison.png     # bar chart of the comparison
+```
+
+## Design decisions and limitations
 
 - It is a **simplified 2D grid simulation**, not a model of a real warehouse or real robot hardware.
-- The battery model uses **simple assumed drain rates**, not measured values.
-- Robots do not avoid each other yet: they can share a cell, and the simulation only counts overlaps.
+- The battery model uses **simple assumed drain and charging rates**, not measured values.
+- The smart score weight (0.1 per battery percent), the station layout, and the number of orders are my choices. I did not tune the weight to improve the results.
+- I have not yet isolated *why* the smart dispatcher wins. Most of the gain probably comes from choosing the nearest robot, not from the battery term.
+- Robots do not avoid each other yet: they can share a cell.
 - The charging dock has no capacity limit, so several robots can charge at the same cell at once.
 - Fleet-management systems such as Open-RMF solve the same kind of problem at a much larger scale. This project is a learning-scale version of the idea.
 
+## What I learned
+
+- Python fundamentals: lists, loops, functions, and classes
+- Breadth-first search for pathfinding around obstacles
+- Modelling a system with states (idle, to pickup, to drop-off, to dock, charging)
+- Designing a fair experiment: seeded inputs, repeated runs, and reporting where the result is weaker
+
 ## Possible next steps
 
-- A* pathfinding in place of the first search method
+- Test what the battery term in the smart score actually contributes by setting its weight to zero and rerunning
+- Add collision avoidance and a limited number of dock slots
+- Try A* pathfinding in place of BFS
 - A heat-aware mode where hot conditions change battery drain and dispatch choices
 - A browser-based version of the simulation
 
