@@ -36,8 +36,8 @@ Warehouses and delivery zones run fleets of robots. The hard part is deciding wh
 | 1 | Draw a grid and move one robot | Done |
 | 2 | Block an aisle and reroute around it | Done |
 | 3 | Four robots, battery drain, charging dock | Done |
-| 4 | Order queue, naive and smart dispatch, metrics | Next |
-| 5 | Run the comparison and write up results | Planned |
+| 4 | Order queue, naive and smart dispatch, metrics | Done |
+| 5 | Run the comparison and write up results | Next |
 
 ## Run it
 
