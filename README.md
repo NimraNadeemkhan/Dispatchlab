@@ -67,7 +67,20 @@ dispatchlab/
 `-- docs/              # screenshots and notes
 ```
 
-## Design decisions and limitations
+## Results
+
+I ran both dispatchers on the same seeded orders, 30 seeds per scenario. In the surge scenario, 15 of the 30 orders arrive at the same moment.
+
+![Naive vs smart dispatch](results/comparison.png)
+
+| Scenario | Dispatcher | Avg delivery time | Worst delivery time | Empty energy |
+|---|---|---|---|---|
+| Normal | Naive | 42.1 | 78.9 | 363.6 |
+| Normal | Smart | 34.6 | 69.6 | 302.3 |
+| Surge | Naive | 67.7 | 123.7 | 361.3 |
+| Surge | Smart | 56.9 | 114.3 | 306.7 |
+
+The smart dispatcher had the lower average delivery time in 27 of 30 normal seeds and 28 of 30 surge seeds. Times are in simulation steps. Empty energy is battery spent driving without an order. The smart score weights (distance plus a small battery penalty) are assumptions, not tuned values, and this is a simplified simulation, so the results show a pattern in this setup and not a real-world claim.## Design decisions and limitations
 
 - It is a **simplified 2D grid simulation**, not a model of a real warehouse or real robot hardware.
 - The battery model uses **simple assumed drain rates**, not measured values.
