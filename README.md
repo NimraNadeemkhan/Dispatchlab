@@ -101,12 +101,27 @@ dispatchlab/
     `-- comparison.png     # bar chart of the comparison
 ```
 
-## Design decisions and limitations
+## Does the battery term matter?
+
+The smart dispatcher scores each idle robot as distance to the pickup plus a battery penalty. To check what the battery part contributes, I reran it with five penalty weights over the same 30 seeds per scenario.
+
+| Scenario | Dispatcher | Avg delivery time | Beat naive |
+|---|---|---|---|
+| Normal | Naive | 42.1 | - |
+| Normal | Smart, weight 0 (nearest robot only) | 34.9 | 27 of 30 |
+| Normal | Smart, weight 0.1 | 34.6 | 27 of 30 |
+| Normal | Smart, weight 2.0 | 36.7 | 25 of 30 |
+| Surge | Naive | 67.7 | - |
+| Surge | Smart, weight 0 (nearest robot only) | 57.3 | 28 of 30 |
+| Surge | Smart, weight 0.1 | 56.9 | 28 of 30 |
+| Surge | Smart, weight 2.0 | 60.1 | 25 of 30 |
+
+**Finding:** In this setup the battery term adds almost nothing. Picking the nearest robot explains nearly all of the improvement, and heavier battery weights make delivery slower. A likely reason is that both dispatchers already follow battery rules (a robot only accepts an order it can finish, and idle robots below 50% go to charge), but I have not tested that explanation. Full data is in `results/weight_experiment.csv`.## Design decisions and limitations
 
 - It is a **simplified 2D grid simulation**, not a model of a real warehouse or real robot hardware.
 - The battery model uses **simple assumed drain and charging rates**, not measured values.
 - The smart score weight (0.1 per battery percent), the station layout, and the number of orders are my choices. I did not tune the weight to improve the results.
-- I have not yet isolated *why* the smart dispatcher wins. Most of the gain probably comes from choosing the nearest robot, not from the battery term.
+- The smart dispatcher's gain comes almost entirely from choosing the nearest robot. A battery penalty added nothing in this setup (see the battery experiment above)
 - Robots do not avoid each other yet: they can share a cell.
 - The charging dock has no capacity limit, so several robots can charge at the same cell at once.
 - Fleet-management systems such as Open-RMF solve the same kind of problem at a much larger scale. This project is a learning-scale version of the idea.
@@ -120,7 +135,7 @@ dispatchlab/
 
 ## Possible next steps
 
-- Test what the battery term in the smart score actually contributes by setting its weight to zero and rerunning
+- Test whether the battery term matters when batteries are smaller or the warehouse is larger
 - Add collision avoidance and a limited number of dock slots
 - Try A* pathfinding in place of BFS
 - A heat-aware mode where hot conditions change battery drain and dispatch choices
