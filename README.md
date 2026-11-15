@@ -1,8 +1,12 @@
 # DispatchLab
 
-A warehouse robot fleet simulator in Python. It tests one question: **Does a smarter dispatcher beat first-come, first-served dispatch, and which part of it actually matters?**
+A warehouse robot fleet simulator in Python. It tests one question: **does a smarter dispatcher beat first-come, first-served dispatch, and which part of it actually matters?**
 
 > **Status:** first version complete. Results below.
+
+![Naive vs smart dispatch, side by side](docs/demo.gif)
+
+*One example run (seed 1, order surge) on identical orders. The averages in the Results section come from 30 seeds, not from this single run.*
 
 ---
 
@@ -103,6 +107,12 @@ To rerun the battery-weight test:
 python src/battery_experiment.py
 ```
 
+To regenerate the side-by-side animation at the top of this page:
+
+```bash
+python src/make_demo_gif.py
+```
+
 To watch the robots move, run the animated demos:
 
 ```bash
@@ -124,11 +134,14 @@ dispatchlab/
 |   `-- milestone4/            # order queue, naive vs smart dispatch, metrics
 |-- src/
 |   |-- run_experiment.py      # the full experiment: 30 seeds, two scenarios
-|   `-- battery_experiment.py  # tests five battery penalty weights
-`-- results/
-    |-- results.csv            # one row per run
-    |-- weight_experiment.csv  # battery weight experiment data
-    `-- comparison.png         # bar chart of the comparison
+|   |-- battery_experiment.py  # tests five battery penalty weights
+|   `-- make_demo_gif.py       # generates the side-by-side demo animation
+|-- results/
+|   |-- results.csv            # one row per run
+|   |-- weight_experiment.csv  # battery weight experiment data
+|   `-- comparison.png         # bar chart of the comparison
+`-- docs/
+    `-- demo.gif               # animation shown at the top of this README
 ```
 
 ## Design decisions and limitations
@@ -139,6 +152,7 @@ dispatchlab/
 - The smart dispatcher's gain comes almost entirely from choosing the nearest robot. A battery penalty added nothing in this setup (see the battery experiment above).
 - Robots do not avoid each other yet: they can share a cell.
 - The charging dock has no capacity limit, so several robots can charge at the same cell at once.
+- The animation shows a single example run, not the averaged results.
 - Fleet-management systems such as Open-RMF solve the same kind of problem at a much larger scale. This project is a learning-scale version of the idea.
 
 ## What I learned
