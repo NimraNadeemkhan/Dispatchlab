@@ -26,6 +26,7 @@ Both strategies follow the same physical rules: a robot only accepts an order if
 - Both strategies run on the **same seeded sequence of orders**.
 - Each scenario is **repeated over 30 seeds** and averaged, not judged from a single run.
 - Results report **average delivery time, worst delivery time, and empty energy**, and also how often the smart strategy actually wins, since it does not win every time.
+- Automated tests check that every order is delivered, batteries never go below zero, and the same seed always produces the same orders and results.
 
 ## What's in the simulation
 
@@ -90,11 +91,11 @@ The smart dispatcher scores each idle robot as distance to the pickup plus a bat
 
 ## Run it
 
-Requires Python 3.9 or newer.
+Tested on Python 3.12 and 3.15. Requires matplotlib (installed by the command below).
 
 ```bash
-git clone https://github.com/NimraNadeemkhan/dispatchlab.git
-cd dispatchlab
+git clone https://github.com/NimraNadeemkhan/Dispatchlab.git
+cd Dispatchlab
 pip install -r requirements.txt
 python src/run_experiment.py
 ```
@@ -105,6 +106,12 @@ To rerun the battery-weight test:
 
 ```bash
 python src/battery_experiment.py
+```
+
+To run the automated tests:
+
+```bash
+python tests/test_simulation.py
 ```
 
 To regenerate the side-by-side animation at the top of this page:
@@ -133,9 +140,12 @@ dispatchlab/
 |   |-- milestone3/            # Robot class, four-robot fleet, charging dock
 |   `-- milestone4/            # order queue, naive vs smart dispatch, metrics
 |-- src/
-|   |-- run_experiment.py      # the full experiment: 30 seeds, two scenarios
+|   |-- simulation.py          # the simulation: robots, orders, dispatchers
+|   |-- run_experiment.py      # 30 seeds, two scenarios, results and chart
 |   |-- battery_experiment.py  # tests five battery penalty weights
 |   `-- make_demo_gif.py       # generates the side-by-side demo animation
+|-- tests/
+|   `-- test_simulation.py     # checks paths, determinism, delivery, battery
 |-- results/
 |   |-- results.csv            # one row per run
 |   |-- weight_experiment.csv  # battery weight experiment data
@@ -162,6 +172,7 @@ dispatchlab/
 - Modelling a system with states (idle, to pickup, to drop-off, to dock, charging)
 - Designing a fair experiment: seeded inputs, repeated runs, and reporting where the result is weaker
 - Testing my own assumption: the battery term I expected to matter turned out not to
+- Structuring code into a shared module with automated tests
 
 ## Possible next steps
 
